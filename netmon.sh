@@ -1,6 +1,9 @@
 #!/bin/bash
 interface=`ip r | grep '^default' | awk '{print $5}'`
 vnstat=`which vnstat`
+if [ ! -d ~/.cache ]; then
+	mkdir ~/.cache
+fi
 if [ ! -z $interface ]; then
 	rx_curr=`cat /sys/class/net/$interface/statistics/rx_bytes`
 	tx_curr=`cat /sys/class/net/$interface/statistics/tx_bytes`
@@ -13,6 +16,7 @@ if [ ! -z $interface ]; then
 	rx_comp=$((($rx_curr-$rx_prev)*2))
 	tx_comp=$((($tx_curr-$tx_prev)*2))
 	numfmt --to=iec-i --suffix=B --field=2,4 --format='%.2f' <<< "<txt>Incoming: $rx_comp Outgoing: $tx_comp </txt>"
+	sleep 0.3
 	echo $rx_curr > ~/.cache/rx_prev_bytes
 	echo $tx_curr > ~/.cache/tx_prev_bytes
 else
@@ -26,13 +30,13 @@ fi
 # vnstat
 if [ ! -z $vnstat ];then
 	if [ -z $interface ]; then
-		printf '<tool>'
+		echo '<tool>'
 		vnstat
-		printf '</tool>'
+		echo '</tool>'
 	else
-		printf '<tool>'
+		echo '<tool>'
 		vnstat | sed -e "s|$interface|$interface <span weight='Bold' fgcolor='Blue'>[current interface]</span> |"
-		printf '</tool>'
+		echo '</tool>'
 	fi
 else
 	echo '<tool>You can install vnstat to track total usage</tool>'
